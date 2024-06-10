@@ -219,7 +219,7 @@ function showDashboard() {
       <div class="col-12">
         <div class="card dashboard-card">
           <div class="card-body">
-            <h5 class="card-title">Liczba Aut</h5>
+            <h5 class="card-title">Zdarzenia na linii czasu</h5>
             <canvas id="carCountChart"></canvas>
           </div>
         </div>
@@ -251,50 +251,58 @@ function renderCarCountChart() {
   const ctx = document.getElementById("carCountChart").getContext("2d");
 
   // Sortowanie zdarzeń według daty
-  const sortedEvents = events.sort(
-    (a, b) => new Date(a.date) - new Date(b.date)
-  );
+  const sortedEvents = events
+    .slice()
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  // Grupowanie zdarzeń według daty
-  const eventDates = sortedEvents.map((event) => event.date);
-  const uniqueDates = [...new Set(eventDates)];
-
-  // Kategoryzacja zdarzeń według typu
-  const eventTypes = [...new Set(events.map((event) => event.type))];
-  const eventTypeData = eventTypes.map((type) => {
-    return {
-      label: type,
-      data: uniqueDates.map((date) => {
-        return events.filter(
-          (event) => event.type === type && event.date === date
-        ).length;
-      }),
-      backgroundColor: getRandomColor(),
-      borderColor: getRandomColor(),
-      fill: false,
-    };
+  // Grupowanie zdarzeń według miesiąca i typu
+  const eventsByMonthAndType = {};
+  sortedEvents.forEach((event) => {
+    const monthYear = `${new Date(event.date).getFullYear()}-${
+      new Date(event.date).getMonth() + 1
+    }`;
+    if (!eventsByMonthAndType[monthYear]) {
+      eventsByMonthAndType[monthYear] = {
+        Kradzież: 0,
+        Naprawa: 0,
+        Tankowanie: 0,
+        Przegląd: 0,
+        Inne: 0,
+      };
+    }
+    eventsByMonthAndType[monthYear][event.type]++;
   });
 
+  // Przygotowanie intensywnych kolorów dla kategorii zdarzeń
+  const eventColors = {
+    Kradzież: "rgba(255, 0, 0, 1)", // Czerwony
+    Naprawa: "rgba(255, 165, 0, 1)", // Pomarańczowy
+    Tankowanie: "rgba(0, 0, 255, 1)", // Niebieski
+    Przegląd: "rgba(0, 128, 0, 1)", // Zielony
+    Inne: "rgba(128, 0, 128, 1)", // Fioletowy
+  };
+
+  // Przygotowanie danych do wykresu
+  const labels = Object.keys(eventsByMonthAndType);
+  const datasets = Object.keys(eventColors).map((type) => ({
+    label: type,
+    backgroundColor: eventColors[type],
+    borderWidth: 0,
+    data: labels.map((label) => eventsByMonthAndType[label][type] || 0),
+  }));
+
   new Chart(ctx, {
-    type: "line",
+    type: "bar",
     data: {
-      labels: uniqueDates,
-      datasets: eventTypeData,
+      labels: labels,
+      datasets: datasets,
     },
     options: {
       scales: {
         x: {
-          type: "time",
-          time: {
-            unit: "day",
-            tooltipFormat: "dd/MM/yyyy",
-            displayFormats: {
-              day: "dd/MM/yyyy",
-            },
-          },
           title: {
             display: true,
-            text: "Data",
+            text: "Miesiąc",
           },
         },
         y: {
@@ -309,15 +317,6 @@ function renderCarCountChart() {
   });
 }
 
-function getRandomColor() {
-  const letters = "0123456789ABCDEF";
-  let color = "#";
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-}
-
 function renderEventCostChart() {
   const ctx = document.getElementById("eventCostChart").getContext("2d");
 
@@ -326,6 +325,16 @@ function renderEventCostChart() {
     const carEvents = events.filter((event) => event.carId === car.id);
     return carEvents.reduce((total, event) => total + (event.cost || 0), 0);
   });
+
+  // Przygotowanie intensywnych kolorów
+  const eventColors = [
+    "rgba(255, 99, 132, 0.8)", // Czerwony
+    "rgba(54, 162, 235, 0.8)", // Niebieski
+    "rgba(255, 205, 86, 0.8)", // Żółty
+    "rgba(75, 192, 192, 0.8)", // Zielony
+    "rgba(153, 102, 255, 0.8)", // Fioletowy
+    "rgba(255, 159, 64, 0.8)", // Pomarańczowy
+  ];
 
   // Tworzenie wykresu
   new Chart(ctx, {
@@ -336,18 +345,8 @@ function renderEventCostChart() {
         {
           label: "Koszty Zdarzeń",
           data: carEventCosts,
-          backgroundColor: cars.map(
-            (_, index) =>
-              `rgba(${(index * 50) % 255}, ${(index * 100) % 255}, ${
-                (index * 150) % 255
-              }, 0.2)`
-          ),
-          borderColor: cars.map(
-            (_, index) =>
-              `rgba(${(index * 50) % 255}, ${(index * 100) % 255}, ${
-                (index * 150) % 255
-              }, 1)`
-          ),
+          backgroundColor: eventColors.slice(0, cars.length),
+          borderColor: eventColors.map((color) => color.replace("0.8", "1")),
           borderWidth: 1,
         },
       ],
@@ -370,6 +369,16 @@ function renderEventTypeChart() {
     (type) => events.filter((event) => event.type === type).length
   );
 
+  // Przygotowanie intensywnych kolorów
+  const eventColors = [
+    "rgba(255, 99, 132, 0.8)", // Czerwony
+    "rgba(54, 162, 235, 0.8)", // Niebieski
+    "rgba(255, 205, 86, 0.8)", // Żółty
+    "rgba(75, 192, 192, 0.8)", // Zielony
+    "rgba(153, 102, 255, 0.8)", // Fioletowy
+    "rgba(255, 159, 64, 0.8)", // Pomarańczowy
+  ];
+
   // Tworzenie wykresu
   new Chart(ctx, {
     type: "doughnut",
@@ -379,18 +388,8 @@ function renderEventTypeChart() {
         {
           label: "Zdarzenia wg Rodzaju",
           data: eventTypeCounts,
-          backgroundColor: eventTypes.map(
-            (_, index) =>
-              `rgba(${(index * 50) % 255}, ${(index * 100) % 255}, ${
-                (index * 150) % 255
-              }, 0.2)`
-          ),
-          borderColor: eventTypes.map(
-            (_, index) =>
-              `rgba(${(index * 50) % 255}, ${(index * 100) % 255}, ${
-                (index * 150) % 255
-              }, 1)`
-          ),
+          backgroundColor: eventColors.slice(0, eventTypes.length),
+          borderColor: eventColors.map((color) => color.replace("0.8", "1")),
           borderWidth: 1,
         },
       ],
@@ -400,4 +399,12 @@ function renderEventTypeChart() {
       maintainAspectRatio: true,
     },
   });
+}
+
+// Funkcja generująca losowy kolor z jasnością powyżej 50
+function getRandomColor() {
+  const r = Math.floor(Math.random() * 205) + 50;
+  const g = Math.floor(Math.random() * 205) + 50;
+  const b = Math.floor(Math.random() * 205) + 50;
+  return `rgba(${r}, ${g}, ${b}, 0.8)`;
 }
