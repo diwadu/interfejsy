@@ -54,3 +54,12 @@ body {
   right: 1rem;
   z-index: 1050;
 }
+.card-body {
+  height: 100%;
+}
+
+canvas {
+  display: block;
+  width: 100% !important;
+  max-height: 500px !important;
+}

@@ -1,11 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  showPage("cars");
-  document
-    .getElementById("menu-toggle")
-    .addEventListener("click", function (e) {
-      e.preventDefault();
-      document.getElementById("wrapper").classList.toggle("toggled");
-    });
+  showPage("dashboard");
 });
 
 function showPage(page) {
@@ -17,6 +11,8 @@ function showPage(page) {
     showEvents();
   } else if (page === "reports") {
     showReports();
+  } else if (page === "dashboard") {
+    showDashboard();
   }
 }
 
@@ -214,4 +210,194 @@ function exportToExcel() {
 
 function exportToPdf() {
   showToast("Eksport do PDF wkrótce dostępny!");
+}
+
+function showDashboard() {
+  const content = document.getElementById("content");
+  let html = `<h1>Dashboardy</h1>
+    <div class="row">
+      <div class="col-12">
+        <div class="card dashboard-card">
+          <div class="card-body">
+            <h5 class="card-title">Liczba Aut</h5>
+            <canvas id="carCountChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="card dashboard-card">
+          <div class="card-body">
+            <h5 class="card-title">Koszty Zdarzeń</h5>
+            <canvas id="eventCostChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="card dashboard-card">
+          <div class="card-body">
+            <h5 class="card-title">Zdarzenia wg Rodzaju</h5>
+            <canvas id="eventTypeChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  content.innerHTML = html;
+  renderCarCountChart();
+  renderEventCostChart();
+  renderEventTypeChart();
+}
+
+function renderCarCountChart() {
+  const ctx = document.getElementById("carCountChart").getContext("2d");
+
+  // Sortowanie zdarzeń według daty
+  const sortedEvents = events.sort(
+    (a, b) => new Date(a.date) - new Date(b.date)
+  );
+
+  // Grupowanie zdarzeń według daty
+  const eventDates = sortedEvents.map((event) => event.date);
+  const uniqueDates = [...new Set(eventDates)];
+
+  // Kategoryzacja zdarzeń według typu
+  const eventTypes = [...new Set(events.map((event) => event.type))];
+  const eventTypeData = eventTypes.map((type) => {
+    return {
+      label: type,
+      data: uniqueDates.map((date) => {
+        return events.filter(
+          (event) => event.type === type && event.date === date
+        ).length;
+      }),
+      backgroundColor: getRandomColor(),
+      borderColor: getRandomColor(),
+      fill: false,
+    };
+  });
+
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: uniqueDates,
+      datasets: eventTypeData,
+    },
+    options: {
+      scales: {
+        x: {
+          type: "time",
+          time: {
+            unit: "day",
+            tooltipFormat: "dd/MM/yyyy",
+            displayFormats: {
+              day: "dd/MM/yyyy",
+            },
+          },
+          title: {
+            display: true,
+            text: "Data",
+          },
+        },
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: "Liczba Zdarzeń",
+          },
+        },
+      },
+    },
+  });
+}
+
+function getRandomColor() {
+  const letters = "0123456789ABCDEF";
+  let color = "#";
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+function renderEventCostChart() {
+  const ctx = document.getElementById("eventCostChart").getContext("2d");
+
+  // Pobieranie kosztów zdarzeń dla każdego samochodu
+  const carEventCosts = cars.map((car) => {
+    const carEvents = events.filter((event) => event.carId === car.id);
+    return carEvents.reduce((total, event) => total + (event.cost || 0), 0);
+  });
+
+  // Tworzenie wykresu
+  new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: cars.map((car) => `${car.brand} ${car.model}`),
+      datasets: [
+        {
+          label: "Koszty Zdarzeń",
+          data: carEventCosts,
+          backgroundColor: cars.map(
+            (_, index) =>
+              `rgba(${(index * 50) % 255}, ${(index * 100) % 255}, ${
+                (index * 150) % 255
+              }, 0.2)`
+          ),
+          borderColor: cars.map(
+            (_, index) =>
+              `rgba(${(index * 50) % 255}, ${(index * 100) % 255}, ${
+                (index * 150) % 255
+              }, 1)`
+          ),
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+    },
+  });
+}
+
+function renderEventTypeChart() {
+  const ctx = document.getElementById("eventTypeChart").getContext("2d");
+
+  // Pobieranie unikalnych typów zdarzeń
+  const eventTypes = [...new Set(events.map((event) => event.type))];
+
+  // Liczenie liczby zdarzeń dla każdego typu
+  const eventTypeCounts = eventTypes.map(
+    (type) => events.filter((event) => event.type === type).length
+  );
+
+  // Tworzenie wykresu
+  new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: eventTypes,
+      datasets: [
+        {
+          label: "Zdarzenia wg Rodzaju",
+          data: eventTypeCounts,
+          backgroundColor: eventTypes.map(
+            (_, index) =>
+              `rgba(${(index * 50) % 255}, ${(index * 100) % 255}, ${
+                (index * 150) % 255
+              }, 0.2)`
+          ),
+          borderColor: eventTypes.map(
+            (_, index) =>
+              `rgba(${(index * 50) % 255}, ${(index * 100) % 255}, ${
+                (index * 150) % 255
+              }, 1)`
+          ),
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+    },
+  });
 }
