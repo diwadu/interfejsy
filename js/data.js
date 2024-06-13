@@ -1,14 +1,74 @@
 const cars = [
-  { id: 1, brand: "Toyota", model: "Corolla" },
-  { id: 2, brand: "Ford", model: "Focus" },
-  { id: 3, brand: "Honda", model: "Civic" },
-  { id: 4, brand: "Chevrolet", model: "Cruze" },
-  { id: 5, brand: "Volkswagen", model: "Golf" },
-  { id: 6, brand: "BMW", model: "3 Series" },
-  { id: 7, brand: "Audi", model: "A4" },
-  { id: 8, brand: "Mercedes-Benz", model: "C-Class" },
-  { id: 9, brand: "Hyundai", model: "Elantra" },
-  { id: 10, brand: "Kia", model: "Forte" },
+  {
+    id: 1,
+    brand: "Toyota",
+    model: "Corolla",
+    registration: "AB 123",
+    color: "Czerwony",
+  },
+  {
+    id: 2,
+    brand: "Ford",
+    model: "Focus",
+    registration: "GT 54345",
+    color: "Zielony",
+  },
+  {
+    id: 3,
+    brand: "Honda",
+    model: "Civic",
+    registration: "CD 123",
+    color: "Biały",
+  },
+  {
+    id: 4,
+    brand: "Chevrolet",
+    model: "Cruze",
+    registration: "EF 456",
+    color: "Biały",
+  },
+  {
+    id: 5,
+    brand: "Volkswagen",
+    model: "Golf",
+    registration: "GH 778",
+    color: "Czerwony",
+  },
+  {
+    id: 6,
+    brand: "BMW",
+    model: "3 Series",
+    registration: "IJ 555",
+    color: "Zielony",
+  },
+  {
+    id: 7,
+    brand: "Audi",
+    model: "A4",
+    registration: "KL 123",
+    color: "Czarny",
+  },
+  {
+    id: 8,
+    brand: "Mercedes-Benz",
+    model: "C-Class",
+    registration: "MN 332",
+    color: "Czerwony",
+  },
+  {
+    id: 9,
+    brand: "Hyundai",
+    model: "Elantra",
+    registration: "OP 444",
+    color: "Biały",
+  },
+  {
+    id: 10,
+    brand: "Kia",
+    model: "Forte",
+    registration: "RS 123",
+    color: "Biały",
+  },
 ];
 
 const events = generateEvents(cars, 3);
@@ -36,6 +96,7 @@ function generateEvents(cars, years) {
             carId: car.id,
             type: randomType,
             date: eventDate.toISOString().substring(0, 10),
+
             cost:
               randomType === "Kradzież"
                 ? null
