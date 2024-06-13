@@ -96,7 +96,7 @@ function generateEvents(cars, years) {
             carId: car.id,
             type: randomType,
             date: eventDate.toISOString().substring(0, 10),
-
+            name: "Zgłoszono " + randomType,
             cost:
               randomType === "Kradzież"
                 ? null
