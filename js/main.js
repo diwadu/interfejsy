@@ -18,7 +18,7 @@ function showPage(page) {
 
 function showCars() {
   const content = document.getElementById("content");
-  let html = `<h1>Lista aut</h1><button class="btn btn-success mb-3" onclick="showAddCarForm()">Dodaj auto</button><table class="table">
+  let html = `<h1>Lista pojazdów</h1><button class="btn btn-success mb-3" onclick="showAddCarForm()">Dodaj auto</button><table class="table">
     <thead><tr><th>ID</th><th>Marka</th><th>Model</th><th>Nr rej.</th><th>Kolor</th><th>Akcje</th></tr></thead><tbody>`;
   cars.forEach((car) => {
     html += `<tr><td>${car.id}</td><td>${car.brand}</td><td>${car.model}</td><td>${car.registration}</td><td>${car.color}</td>
